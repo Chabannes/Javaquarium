@@ -27,5 +27,4 @@ class Herbivore : public Poisson
 
 };
 
-
 #endif

@@ -1,5 +1,5 @@
-MonExe: Aquarium.o Poisson.o Algue.o main.o Herbivore.o Carnivore.o Animal.o
-	g++ -o MonExe main.o Poisson.o Aquarium.o Algue.o Herbivore.o Carnivore.o Animal.o
+Exe: Aquarium.o Poisson.o Algue.o main.o Herbivore.o Carnivore.o Animal.o
+	g++ -o Exe main.o Poisson.o Aquarium.o Algue.o Herbivore.o Carnivore.o Animal.o
 
 Aquarium.o: Aquarium.cpp
 	g++ -c Aquarium.cpp
@@ -20,4 +20,4 @@ main.o: main.cpp
 	g++ -c main.cpp
 
 clean: 
-	rm *.o MonExe
+	rm *.o Exe

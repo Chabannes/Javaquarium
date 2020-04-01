@@ -8,7 +8,7 @@
 int main()
 
 {
-    freopen ("rapport aquarium.txt","w",stdout);
+    freopen ("rapport_aquarium.txt","w",stdout);
     Aquarium aquarium;
 
     aquarium.add_algue(10);

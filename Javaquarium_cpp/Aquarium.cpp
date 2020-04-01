@@ -3,10 +3,6 @@
 #include "Herbivore.h"
 
 
-
-
-// PROBLEME : LA VIE DES ALGUES SE REGENERE AU FUR ET A MESURE
-
 #include <iostream>
 #include <string>
 #include <vector>
