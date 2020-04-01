@@ -84,7 +84,7 @@ class Aquarium:
         self._round = value
 
     def make_predatory_eat(self):
-        for index, row in self._pred_display.iterrows():    # while k < len(self._pred_display.index):
+        for index, row in self._pred_display.iterrows():
             if not self._herb_display.empty:
                 if row['object'].eat():
                     n = random.randrange(len(self._herb_display.index))
@@ -187,7 +187,7 @@ class Aquarium:
                         self._herb_display.loc[self._herb_display.object == row_female['object'], 'pregnant'] = row_female['object'].pregnant
                         ###
 
-    def make_grow_old(self):          # LES 20 ANS DOIVENT ETRE INTEGRES A CHAQUE CLASS !!!!!!!!!!!!!!!!!!!!!!!!!!
+    def make_grow_old(self):
 
         for index, row in self._algae_display.iterrows():
             row['object'].age += 1

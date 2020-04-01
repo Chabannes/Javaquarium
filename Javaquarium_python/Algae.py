@@ -71,10 +71,3 @@ class Algae:
                 baby_algae = Algae(new_id, age, life)
                 baby_list.append(baby_algae)
             return baby_list
-
-
-            # n = random.randint(1, 9) * 0.1
-            # if n < type(self).reproduction_rate():
-            #     life_transfer = int((self._life + 1)/2)
-            #     self.life = life_transfer
-            #     return type(self)(new_id, life_transfer)
