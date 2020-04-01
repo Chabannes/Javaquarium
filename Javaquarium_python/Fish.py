@@ -1,8 +1,6 @@
-import random
+
 
 class Fish:
-
-    max_life = 10
 
     def __init__(self, id, gender, age, life, diet):
         self.id = id
@@ -25,10 +23,6 @@ class Fish:
         return self._age
 
     @property
-    def life(self):
-        return self._life
-
-    @property
     def pregnant(self):
         return self._pregnant
 
@@ -47,18 +41,6 @@ class Fish:
     @age.setter
     def age(self, value):
         self._age = value
-
-    @life.setter
-    def life(self, value):
-        self._life = value
-        if self._life >= 10:
-            self._life = 10
-
-        elif self._life >= type(self).max_life:
-            del self
-
-        elif self._life <= 0:
-            del self
 
     @pregnant.setter
     def pregnant(self, value):

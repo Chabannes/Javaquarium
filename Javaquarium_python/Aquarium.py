@@ -9,63 +9,109 @@ from Algae import *
 class Aquarium:
 
     def __init__(self, nb_pred, nb_herb, nb_algae):
-        self._pred_display = pd.DataFrame(columns=['id', 'specie', 'age', 'life', 'gender', 'pregnant', 'object'])
-        self._herb_display = pd.DataFrame(columns=['id', 'specie', 'age', 'life', 'gender', 'pregnant', 'object'])
-        self._algae_display = pd.DataFrame(columns=['id', 'age', 'life', 'object'])
-        self._history_pred = [nb_pred]
-        self._history_herb = [nb_herb]
-        self._history_algae = [nb_algae]
-        self._number_pred = nb_pred
-        self._number_herb = nb_herb
-        self._number_algae = nb_algae
-        self._round = 0
+        self.pred_display = pd.DataFrame(columns=['id', 'specie', 'age', 'life', 'gender', 'pregnant'])
+        self.herb_display = pd.DataFrame(columns=['id', 'specie', 'age', 'life', 'gender', 'pregnant'])
+        self.algae_display = pd.DataFrame(columns=['id', 'age', 'life'])
+        self.history_pred = [nb_pred]
+        self.history_herb = [nb_herb]
+        self.history_algae = [nb_algae]
+        self.number_pred = len(Predatory.instances)
+        self.number_herb = len(Herbivore.instances)
+        self.number_algae = len(Algae.instances)
+        self.round = 0
 
         pd_pred = pd.read_csv('predatory', header=None, names=['predatory'])
         pd_herb = pd.read_csv('herbivore', header=None, names=['herbivore'])
 
-        for k in range(self._number_pred):
+        for k in range(nb_pred):
             n = pd_pred.shape[0]
             x = random.randrange(n)
             specie = pd_pred.iloc[x]['predatory']
-            id = "predatory_" + str(k + 1)
+            new_id = "predatory_" + str(k + 1)
             gender = random.choice(['male', 'female'])
-            age = random.randrange(1, 11)
-            life = random.randrange(6, 11)
-            pred = Predatory(id, gender, age, life, specie)
-            self._pred_display.loc[k] = [pred.id, pred.specie, pred.age, pred.life, pred.gender, pred.pregnant, pred]
+            age = random.randrange(1, Predatory.max_age)
+            life = random.randrange(5, 11)
+            Predatory(new_id, gender, age, life, specie)
 
-        for k in range(self._number_herb):
+        for k in range(nb_herb):
             n = pd_herb.shape[0]
             x = random.randrange(n)
             specie = pd_herb.iloc[x]['herbivore']
-            id = "herbivore_" + str(k + 1)
+            new_id = "herbivore_" + str(k + 1)
             gender = random.choice(['male', 'female'])
-            age = random.randrange(1, 11)
-            life = random.randrange(6, 11)
-            herb = Herbivore(id, gender, age, life, specie)
-            self._herb_display.loc[k] = [herb.id, herb.specie, herb.age, herb.life, herb.gender, herb.pregnant, herb]
+            age = random.randrange(1, Herbivore.max_age)
+            life = random.randrange(5, 11)
+            Herbivore(new_id, gender, age, life, specie)
 
-        for k in range(self._number_algae):
-            age = random.randrange(1, 31)
-            life = random.randrange(6, 11)
-            algae = Algae("algae_" + str(k + 1), life, age)
-            self._algae_display.loc[k] = [algae.id, algae.life, age, algae]
+        for k in range(nb_algae):
+            age = random.randrange(1, Algae.max_age)
+            life = random.randrange(5, 11)
+            new_id = "algae_" + str(k + 1)
+            Algae(new_id, life, age)
+
+    @property
+    def algae(self):
+        return Algae.instances
+
+    @property
+    def herb(self):
+        return Herbivore.instances
+
+    @property
+    def pred(self):
+        return Predatory.instances
 
     @property
     def number_pred(self):
-        return len(self._pred_display.index)
+        return len(Predatory.instances)
 
     @property
     def number_herb(self):
-        return len(self._herb_display.index)
+        return len(Herbivore.instances)
 
     @property
     def number_algae(self):
-        return len(self._algae_display.index)
+        return len(Algae.instances)
+
+    @property
+    def pred_display(self):
+        return self._pred_display
+
+    @property
+    def herb_display(self):
+        return self._herb_display
+
+    @property
+    def algae_display(self):
+        return self._algae_display
 
     @property
     def round(self):
         return self._round
+
+    @algae.setter
+    def algae(self, value):
+        self._algae = value
+
+    @herb.setter
+    def herb(self, value):
+        self._herb = value
+
+    @pred.setter
+    def pred(self, value):
+        self._pred = value
+
+    @pred_display.setter
+    def pred_display(self, value):
+        self._pred_display = value
+
+    @herb_display.setter
+    def herb_display(self, value):
+        self._herb_display = value
+
+    @algae_display.setter
+    def algae_display(self, value):
+        self._algae_display = value
 
     @number_pred.setter
     def number_pred(self, value):
@@ -84,166 +130,117 @@ class Aquarium:
         self._round = value
 
     def make_predatory_eat(self):
-        for index, row in self._pred_display.iterrows():
-            if not self._herb_display.empty:
-                if row['object'].eat():
-                    n = random.randrange(len(self._herb_display.index))
-                    self._herb_display.iloc[n]['object'].is_bit()
-                    if self._herb_display.iloc[n]['object'].life <= 0:
-                        self._herb_display = self._herb_display[self._herb_display['object'] != self._herb_display.iloc[n]['object']]
-                    else:
-                        self._herb_display.loc[self._herb_display.id == self._herb_display.iloc[n].id, 'life'] = self._herb_display.iloc[n].life
-            else:
-                break
+        for pred in self.pred:
+            if self.herb:
+                if pred.eat():
+                    n = random.randrange(len(self.herb))
+                    self.herb[n].is_bit()
 
     def make_herbivore_eat(self):
-        for index, row in self._herb_display.iterrows():
-            if not self._algae_display.empty:
-                if row['object'].eat():
-                    n = random.randrange(len(self._algae_display.index))
-                    self._algae_display.iloc[n]['object'].is_bit()
-                    if self._algae_display.iloc[n]['object'].life <= 0:
-                        self._algae_display = self._algae_display[self._algae_display['object'] != self._algae_display.iloc[n]['object']]
-                    else:
-                        self._algae_display.loc[self._algae_display.id == self._algae_display.iloc[n].id, 'life'] = self._algae_display.iloc[n].life
-            else:
-                break
+        for herb in self.herb:
+            if self.algae:
+                if herb.eat():
+                    n = random.randrange(len(self.algae))
+                    self.algae[n].is_bit()
 
     def get_hungry(self):
-        for index, row in self._pred_display.iterrows():
-            row['object'].life -= 1
-            if row['object'].life <= 0:  # object deleted in Fish
-                self._pred_display = self._pred_display[self._pred_display['object'] != row['object']]
-            else:
-                self._pred_display.loc[self._pred_display['object'] == row['object'], 'life'] = row['object'].life
+        for pred in self.pred:
+            pred.life -= 1
 
-        for index, row in self._herb_display.iterrows():
-            row['object'].life -= 1
-            if row['object'].life <= 0:  # object deleted in Fish
-                self._herb_display = self._herb_display[self._herb_display['object'] != row['object']]
-            else:
-                self._herb_display.loc[self._herb_display['object'] == row['object'], 'life'] = row['object'].life
+        for herb in self.herb:
+            herb.life -= 1
 
     def make_give_birth(self):
-        algae_candidates = self._algae_display.loc[self._algae_display['life'] > 2]
-        for index, row in algae_candidates.iterrows():
-            new_algae_list = row['object'].reproduce(len(Algae.instances))
-            if new_algae_list:
-                ind = len(self._algae_display.index)
-                for k in range(len(new_algae_list)): #if new_algae:
-                    self._algae_display.loc[ind + k] = [new_algae_list[k].id, new_algae_list[k].life, new_algae_list[k].age, new_algae_list[k]]
+        algae_candidates = [algae for algae in self.algae if (algae.age > Algae.sexual_maturity) & (algae.life > 3)]
+        for algae in algae_candidates:
+            algae.reproduce(self.number_algae)
 
-        pregnant_pred = self._pred_display.loc[self._pred_display['pregnant'] == True]
-        for index, row in pregnant_pred.iterrows():
-            new_pred_list = row['object'].give_birth(len(Predatory.instances))
-            ind = len(self._pred_display.index)
-            for k in range(len(new_pred_list)):
-                self._pred_display.loc[ind + k] = [new_pred_list[k].id, new_pred_list[k].specie, new_pred_list[k].age, new_pred_list[k].life, \
-                                           new_pred_list[k].gender, new_pred_list[k].pregnant, new_pred_list[k]]
-            ###
-            row['object'].pregant = False
-            self._pred_display.loc[self._pred_display.object == row['object'], 'pregnant'] = row['object'].pregnant
-            ###
+        pregnant_pred = [pred for pred in self.pred if pred.pregnant == True]
+        for pred in pregnant_pred:
+            ind = self.number_pred
+            pred.give_birth(ind)
 
-        pregnant_herb = self._herb_display.loc[self._herb_display['pregnant'] == True]
-        for index, row in pregnant_herb.iterrows():
-            new_herb_list = row['object'].give_birth(len(Herbivore.instances))
-            ind = len(self._herb_display.index)
-            for k in range(len(new_herb_list)):
-                self._herb_display.loc[ind + k] = [new_herb_list[k].id, new_herb_list[k].specie, new_herb_list[k].age, new_herb_list[k].life, \
-                                           new_herb_list[k].gender, new_herb_list[k].pregnant, new_herb_list[k]]
-            ###
-            row['object'].pregant = False
-            self._herb_display.loc[self._herb_display.object == row['object'], 'pregnant'] = row['object'].pregnant
-            ###
+        pregnant_herb = [herb for herb in self.herb if herb.pregnant == True]
+        for herb in pregnant_herb:
+            ind = self.number_herb
+            herb.give_birth(ind)
 
     def make_insemination(self):
-        male_predatories = self._pred_display.loc[self._pred_display['gender'] == 'male']
-        male_herbivores = self._herb_display.loc[self._herb_display['gender'] == 'male']
+        male_pred_list = [pred for pred in self.pred if pred.gender == 'male']
+        for male_pred in male_pred_list:
+            dating_pool = [pred for pred in self.pred if (pred.specie == male_pred.specie)&(pred.gender == 'female')& \
+                           (pred.age >= Predatory.sexual_maturity)&(pred.pregnant == False)&(pred.life > 2)]
+            for female_pred in dating_pool:
+                female_pred.inseminate()
 
-        for index_male, row_male in male_predatories.iterrows():
-            dating_pool = self._pred_display.loc[(self._pred_display['specie'] == row_male['object'].specie) & \
-                                            (self._pred_display['gender'] != row_male['object'].gender) & (self._pred_display['age'] > 6)]
-
-            for index_female, row_female in dating_pool.iterrows():
-                if not row_female['object'].pregnant:
-                    n = random.randrange(0, 11) * 0.1
-                    if n <= Predatory.reproduction_rate:
-                        ###
-                        row_female['object'].pregnant = True
-                        self._pred_display.loc[self._pred_display.object == row_female['object'], 'pregnant'] = row_female['object'].pregnant
-                        ###
-
-        for index_male, row_male in male_herbivores.iterrows():
-            dating_pool = self._herb_display.loc[(self._herb_display['specie'] == row_male['object'].specie) & \
-                                            (self._herb_display['gender'] != row_male['object'].gender) & (self._herb_display['age'] > 6)]
-
-            for index_female, row_female in dating_pool.iterrows():
-                if not row_female['object'].pregnant:
-                    n = random.randrange(0, 11) * 0.1
-                    if n <= Herbivore.reproduction_rate:
-                        ###
-                        row_female['object'].pregnant = True
-                        self._herb_display.loc[self._herb_display.object == row_female['object'], 'pregnant'] = row_female['object'].pregnant
-                        ###
+        male_herb_list = [herb for herb in self.herb if herb.gender == 'male']
+        for male_herb in male_herb_list:
+            dating_pool = [herb for herb in self.herb if (herb.specie == male_herb.specie)&(herb.gender == 'female')& \
+                           (herb.age >= Herbivore.sexual_maturity)&(herb.pregnant == False)&(herb.life > 2)]
+            for female_herb in dating_pool:
+                female_herb.inseminate()
 
     def make_grow_old(self):
 
-        for index, row in self._algae_display.iterrows():
-            row['object'].age += 1
-            if row['object'].age > 40:
-                self._algae_display = self._algae_display[self._algae_display['object'] != row['object']]
-            else:
-                self._algae_display.loc[self._algae_display.object == row.object, 'age'] = row['object'].age
+        for algae in self.algae:
+            algae.grow_back()
 
-        k = 0
-        while k < len(self._pred_display.index):
-            self._pred_display.iloc[k]['object'].age += 1
-            if self._pred_display.iloc[k]['object'].age > 20:
-                self._pred_display = self._pred_display[self._pred_display['object'] != self._pred_display.iloc[k]['object']]
-            else:
-                # UPDATE
-                self._pred_display.loc[self._pred_display.object == self._pred_display.iloc[k].object, 'age'] = self._pred_display.iloc[k]['object'].age
-            k += 1
-        k = 0
-        while k < len(self._herb_display.index):
-            self._herb_display.iloc[k]['object'].age += 1
-            if self._herb_display.iloc[k]['object'].age > 20:
-                del self._herb_display.iloc[k]['object']  # die of old age
-                self._herb_display = self._herb_display[self._herb_display['object'] != self._herb_display.iloc[k]['object']]
-            else:
-                # UPDATE
-                self._herb_display.loc[self._herb_display.object == self._herb_display.iloc[k].object, 'age'] = self._herb_display.iloc[k]['object'].age
-            k += 1
+        for pred in self.pred:
+            pred.age += 1
 
-        for index, row in self._algae_display.iterrows():
-            row['object'].grow_back()
-            self._algae_display.loc[self._algae_display.object == row.object, 'life'] = row['object'].life  # UPDATE
+        for herb in self.herb:
+            herb.age += 1
 
     def make_census(self):
 
-        self._history_pred.append(self.number_pred)
-        self._history_herb.append(self.number_herb)
-        self._history_algae.append(self.number_algae)
-        self._round += 1
+        self.history_pred.append(self.number_pred)
+        self.history_herb.append(self.number_herb)
+        self.history_algae.append(self.number_algae)
+        self.round += 1
 
     def show_aquarium(self):
 
-        show_pred =  self._pred_display[['id', 'age', 'life', 'gender', 'pregnant']]
-        show_herb =  self._herb_display[['id', 'age', 'life', 'gender', 'pregnant']]
-        show_algae =  self._algae_display[['id', 'life']]
+        for k in range(len(self.pred)):
+            pred = self.pred[k]
+            self.pred_display.loc[k] = [pred.id, pred.specie, pred.age, pred.life, pred.gender, pred.pregnant]
+        self.pred_display = self.pred_display.drop([ i for i in range(len(self.pred), len(self.pred_display.index))])
 
-        print("\nThe predatories in the aquarium are :\n", show_pred)
-        print("\nThe herbivores in the aquarium are :\n", show_herb)
-        print("\nThe algaes in the aquarium are :\n", show_algae)
+        for k in range(len(self.herb)):
+            herb = self.herb[k]
+            self.herb_display.loc[k] = [herb.id, herb.specie, herb.age, herb.life, herb.gender, herb.pregnant]
+        self.herb_display = self.herb_display.drop([i for i in range(len(self.herb), len(self.herb_display.index))])
+
+        for k in range(len(self.algae)):
+            algae = self.algae[k]
+            self.algae_display.loc[k] = [algae.id, algae.life, algae.age]
+        self.algae_display = self.algae_display.drop([ i for i in range(len(self.algae), len(self.algae_display.index))])
+
+        print("\nROUND %s\n" %self.round)
+
+        if self.pred_display.empty:
+            print("\nNo more predatories in the aquarium.")
+        else:
+            print("\nThe predatories in the aquarium are :\n", self.pred_display)
+
+        if self.herb_display.empty:
+            print("No more herbivores in the aquarium.")
+        else:
+            print("\nThe herbivores in the aquarium are :\n", self.herb_display)
+
+        if self.algae_display.empty:
+            print("\nNo more algaes in the aquarium.")
+        else:
+            print("\nThe algaes in the aquarium are :\n", self.algae_display)
 
     def plot_evolution(self):
-        time = list(range(0, self._round + 1))
+
+        time = list(range(0, self.round + 1))
         plt.figure()
-        plt.title('Aquarium Evolution until round %s' %(self._round))
-        plt.plot(time, self._history_pred, label='predatories', c='r', linewidth=3)
-        plt.plot(time, self._history_herb, label='herbivores', c='b', linewidth=3)
-        plt.plot(time, self._history_algae, label='algaes', c='g', linewidth=3)
+        plt.title('Aquarium Evolution until round %s' %(self.round))
+        plt.plot(time, self.history_pred, label='predatories', c='r', linewidth=3)
+        plt.plot(time, self.history_herb, label='herbivores', c='b', linewidth=3)
+        plt.plot(time, self.history_algae, label='algaes', c='g', linewidth=3)
+        plt.grid()
         plt.xlabel('Number of rounds')
         plt.ylabel('Fauna and Flora quantities')
         plt.legend()

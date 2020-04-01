@@ -1,25 +1,26 @@
 import random
 import numpy as np
-import weakref
 
 
 class Algae:
 
-    max_life = 40
+    max_age = 20
+    sexual_maturity = 4
     instances = []
 
-    def __init__(self, id, life, age=0):
+    def __init__(self, id, life, age):
         self.id = id
         self.life = life
         self.age = age
-        self.__class__.instances.append(weakref.proxy(self))
+        self.__class__.instances.append(self)
 
-    def __del__(self):
-        Algae.instances.remove(self)
+    @classmethod
+    def garbage_deads(cls):
+        cls.instances = [algae for algae in cls.instances if algae.life > 0]
 
     @classmethod
     def reproduction_rate(cls):
-        return int(300*np.exp(-len(cls.instances)/20))
+        return int(300*np.exp(-len(cls.instances)/30))
 
     @property
     def id(self):
@@ -40,6 +41,8 @@ class Algae:
     @age.setter
     def age(self, value):
         self._age = value
+        if self._age >= type(self).max_age:
+            Algae.instances.remove(self)
 
     @life.setter
     def life(self, value):
@@ -47,27 +50,22 @@ class Algae:
         if self._life >= 10:
             self._life = 10
 
-        elif self._life >= type(self).max_life:
-            del self
-
         elif self._life <= 0:
-            del self
+            Algae.instances.remove(self)
 
     def is_bit(self):
-        self.life -= 3
+        self.life -= 10
 
     def grow_back(self):
         self.life += 1
+        self.age += 1
 
     def reproduce(self, id_number):
         if self.life > 4:
             m = random.randrange(type(self).reproduction_rate(), type(self).reproduction_rate() + 1)
-            baby_list = []
             for k in range(m):
                 age = 0
-                life = int(self.life/2)
-                self.life = self.life/2
+                life = int(self.life/2 + 1)
+                self.life = life
                 new_id = "algae_" + str(id_number + k)
-                baby_algae = Algae(new_id, age, life)
-                baby_list.append(baby_algae)
-            return baby_list
+                Algae(new_id, life, age)
